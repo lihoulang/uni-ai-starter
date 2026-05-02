@@ -43,6 +43,14 @@ QWEN_API_URL = os.environ.get("QWEN_API_URL", "https://dashscope.aliyuncs.com/co
 QWEN_MODEL_NAME = os.environ.get("QWEN_MODEL_NAME", "qwen-vl-max")
 QWEN_TEXT_MODEL = os.environ.get("QWEN_TEXT_MODEL", "qwen-max")
 
+DOUBAO_API_KEY = os.environ.get("DOUBAO_API_KEY", "")
+DOUBAO_API_URL = os.environ.get("DOUBAO_API_URL", "https://ark.cn-beijing.volces.com/api/v3/chat/completions")
+DOUBAO_MODEL_NAME = os.environ.get("DOUBAO_MODEL_NAME", "doubao-seed-1-6-lite-250615")
+
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_API_URL = os.environ.get("GEMINI_API_URL", "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions")
+GEMINI_MODEL_NAME = os.environ.get("GEMINI_MODEL_NAME", "gemini-2.5-flash")
+
 DB_PATH = os.environ.get("DB_PATH", "app.db")
 RATE_LIMIT_WINDOW = int(os.environ.get("RATE_LIMIT_WINDOW", "60"))
 RATE_LIMIT_MAX = int(os.environ.get("RATE_LIMIT_MAX", "30"))
@@ -372,6 +380,10 @@ def normalize_qwen_api_url(url: str) -> str:
         return normalized
     if normalized.endswith("/compatible-mode/v1"):
         return f"{normalized}/chat/completions"
+    if normalized.endswith("/api/v3"):
+        return f"{normalized}/chat/completions"
+    if normalized.endswith("/openai"):
+        return f"{normalized}/chat/completions"
     return normalized
 
 
@@ -380,6 +392,16 @@ def resolve_qwen_vision_model(model_name: str) -> str:
     if "vl" in lowered or "omni" in lowered:
         return model_name
     return os.environ.get("QWEN_VISION_FALLBACK", "qwen-vl-max")
+
+
+def resolve_text_model_config(model_name: str) -> tuple[str, str, str, str]:
+    if model_name == "qwen":
+        return normalize_qwen_api_url(QWEN_API_URL), QWEN_API_KEY, QWEN_TEXT_MODEL, "Qwen"
+    if model_name == "doubao":
+        return normalize_qwen_api_url(DOUBAO_API_URL), DOUBAO_API_KEY, DOUBAO_MODEL_NAME, "豆包"
+    if model_name == "gemini":
+        return normalize_qwen_api_url(GEMINI_API_URL), GEMINI_API_KEY, GEMINI_MODEL_NAME, "Gemini"
+    return DS_API_URL, DS_API_KEY, DS_MODEL_NAME, "DeepSeek"
 
 
 # ===========================================
@@ -820,10 +842,7 @@ async def chat(req: ChatRequest, request: Request):
                             yield chunk
             else:
                 use_model = req.model
-                if use_model == "qwen":
-                    api_url, api_key, model_name = normalize_qwen_api_url(QWEN_API_URL), QWEN_API_KEY, QWEN_TEXT_MODEL
-                else:
-                    api_url, api_key, model_name = DS_API_URL, DS_API_KEY, DS_MODEL_NAME
+                api_url, api_key, model_name, provider_label = resolve_text_model_config(use_model)
 
                 for loop_i in range(5):
                     body = {"model": model_name, "messages": formatted, "tools": AGENT_TOOLS, "stream": True}
@@ -838,7 +857,7 @@ async def chat(req: ChatRequest, request: Request):
                     )
                     if resp.status_code >= 400:
                         refund_base_once()
-                        yield f"{'Qwen' if use_model == 'qwen' else 'DeepSeek'} 请求失败：HTTP {resp.status_code} {resp.text}"
+                        yield f"{provider_label} 请求失败：HTTP {resp.status_code} {resp.text}"
                         return
 
                     tool_calls = []
