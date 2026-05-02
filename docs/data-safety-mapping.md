@@ -53,6 +53,8 @@ Review before release:
 
 - DeepSeek
 - DashScope / Qwen / Wanx related endpoints
+- Volcano Engine / Doubao related endpoints
+- Google Gemini related endpoints
 
 ## Questions To Confirm Before Filling Play Console
 

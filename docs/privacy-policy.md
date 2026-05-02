@@ -12,12 +12,12 @@ This application may collect and process:
 We use this data to:
 
 - authenticate your account
-- provide chat, image, and video AI features you explicitly request
+- provide chat and image AI features you explicitly request
 - store conversation history and balance records
 - prevent abuse, investigate failures, and handle moderation reports
 
-When you use AI features, relevant prompts and uploaded images may be sent to third-party model providers for processing. Do not upload highly sensitive personal data unless you accept that risk.
+When you use AI features, relevant prompts and uploaded images may be sent to third-party model providers for processing. Current production paths may involve Volcano Engine / Doubao related model services and Google Gemini related model services. Do not upload highly sensitive personal data unless you accept that risk.
 
 You can delete your account from the in-app profile page. Account deletion removes the account and associated application data stored by this project.
 
-This repository copy is the source version of the policy. Before submitting to Google Play, publish the final matching policy at a public HTTPS URL and use that same URL in Play Console.
+Privacy contact: 819317636@qq.com
